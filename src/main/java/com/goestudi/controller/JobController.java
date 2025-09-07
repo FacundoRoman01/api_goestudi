@@ -25,15 +25,15 @@ public class JobController {
 	    }
 	    
 	    
-	    /**
-	     * Endpoint para obtener todos los trabajos o filtrar por un término.
-	     * GET /api/jobs?keyword=java
-	     * @param keyword La palabra clave para la búsqueda.
-	     * @return Una lista de objetos JobDTO.
-	     */
 	    @GetMapping
-	    public List<JobDTO> getJobs(@RequestParam(required = false) String keyword) {
-	        return jobService.findAll(keyword);
+	    public List<JobDTO> getJobs(
+	        @RequestParam(required = false) String keyword,
+	        @RequestParam(required = false) List<String> location,
+	        @RequestParam(required = false) Boolean isInternship, // Nuevo parámetro
+	        @RequestParam(required = false) Boolean isPartTime   // Nuevo parámetro
+	    ) {
+	        // Llama al método de servicio que maneja todos los filtros
+	        return jobService.findJobsByFilters(keyword, location, isInternship, isPartTime);
 	    }
 	
 }

@@ -30,18 +30,30 @@ public class Job {
 	 // Mapea el campo 'jobDetails' a la columna 'job_details'
 	 @Column(name = "job_details")
 	 private String jobDetails;
+	 
+	 // Nuevos campos para los filtros
+	 @Column(name = "is_internship")
+	 private Boolean isInternship; // Usar Boolean para permitir valores nulos (true/false/null)
+	 
+	 @Column(name = "is_part_time")
+	 private Boolean isPartTime; // Usar Boolean para permitir valores nulos
+	
+	 
+	 
 	
 	  // Constructor
     public Job() {}
 
     
-    public Job(String company, String location, String title, boolean isPaid, String postedAgo, String jobDetails) {
+    public Job(String company, String location, String title, boolean isPaid, String postedAgo, String jobDetails,Boolean isInternship,Boolean isPartTime  ) {
         this.company = company;
         this.location = location;
         this.title = title;
         this.isPaid = isPaid;
         this.postedAgo = postedAgo;
         this.jobDetails = jobDetails;
+        this.isInternship = isInternship;
+        this.isPartTime = isPartTime;
     }
     
     // Getters y Setters
@@ -65,5 +77,13 @@ public class Job {
 
     public String getJobDetails() { return jobDetails; }
     public void setJobDetails(String jobDetails) { this.jobDetails = jobDetails; }
+    
+    public Boolean getIsInternship() { return isInternship; }
+    public void setIsInternship(Boolean isInternship) { this.isInternship = isInternship; }
+    
+    public Boolean getIsPartTime() { return isPartTime; }
+    public void setIsPartTime(Boolean isPartTime) { this.isPartTime = isPartTime; }
+    
+    
 	
 }

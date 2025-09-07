@@ -8,18 +8,24 @@ public class JobDTO {
 	    private boolean isPaid;
 	    private String postedAgo;
 	    private String jobDetails;
+	    
+	    
+	    private Boolean isInternship;
+	    private Boolean isPartTime;
 
 	    // Constructor vacío
 	    public JobDTO() {}
 
 	    
-	    public JobDTO(String company, String location, String title, boolean isPaid, String postedAgo, String jobDetails) {
+	    public JobDTO(String company, String location, String title, boolean isPaid, String postedAgo, String jobDetails, Boolean isInternship,Boolean isPartTime ) {
 	        this.company = company;
 	        this.location = location;
 	        this.title = title;
 	        this.isPaid = isPaid;
 	        this.postedAgo = postedAgo;
 	        this.jobDetails = jobDetails;
+	        this.isInternship = isInternship;
+	        this.isPartTime = isPartTime;
 	    }
 
 	    // Getters y Setters
@@ -40,5 +46,11 @@ public class JobDTO {
 	    
 	    public String getJobDetails() { return jobDetails; }
 	    public void setJobDetails(String jobDetails) { this.jobDetails = jobDetails; }
+	    
+	    public Boolean getIsInternship() { return isInternship; }
+	    public void setIsInternship(Boolean isInternship) { this.isInternship = isInternship; }
+
+	    public Boolean getIsPartTime() { return isPartTime; }
+	    public void setIsPartTime(Boolean isPartTime) { this.isPartTime = isPartTime; }
 
 }
