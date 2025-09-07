@@ -1,0 +1,22 @@
+# Excluir el directorio de compilación y los archivos generados
+/target/
+/build/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Archivos de la aplicación
+*.log
+!*.properties # No ignores los archivos de propiedades, a menos que quieras
+# Agrega el archivo de propiedades específico si tiene datos sensibles
+# application-dev.properties
+# application-prod.properties
+
+# Archivos de seguridad
+*.jks # Keystore files
+
+# Archivos de caché del SO
+.cache
