@@ -1,7 +1,7 @@
 package com.goestudi.dto;
 
 public class JobDTO {
-	
+	 private Long id;
 	  private String company;
 	    private String location;
 	    private String title;
@@ -17,8 +17,9 @@ public class JobDTO {
 	    public JobDTO() {}
 
 	    
-	    public JobDTO(String company, String location, String title, boolean isPaid, String postedAgo, String jobDetails, Boolean isInternship,Boolean isPartTime ) {
-	        this.company = company;
+	    public JobDTO(Long id, String company, String location, String title, boolean isPaid, String postedAgo, String jobDetails, Boolean isInternship,Boolean isPartTime ) {
+	    	this.id = id;
+	    	this.company = company;
 	        this.location = location;
 	        this.title = title;
 	        this.isPaid = isPaid;
@@ -29,6 +30,9 @@ public class JobDTO {
 	    }
 
 	    // Getters y Setters
+	    public Long getId() { return id; }
+	    public void setId(Long id) { this.id = id; }
+	    
 	    public String getCompany() { return company; }
 	    public void setCompany(String company) { this.company = company; }
 	    
