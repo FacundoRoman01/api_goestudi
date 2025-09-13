@@ -1,60 +1,125 @@
 package com.goestudi.dto;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 public class JobDTO {
-	 private Long id;
-	  private String company;
-	    private String location;
-	    private String title;
-	    private boolean isPaid;
-	    private String postedAgo;
-	    private String jobDetails;
-	    
-	    
-	    private Boolean isInternship;
-	    private Boolean isPartTime;
 
-	    // Constructor vacío
-	    public JobDTO() {}
+    private Long id;
+    
+    @NotBlank(message = "El título no puede estar en blanco")
+    @Size(max = 100, message = "El título no puede tener más de 100 caracteres")
+    private String title;
+    
+    @NotBlank(message = "La ubicación no puede estar en blanco")
+    private String location;
 
-	    
-	    public JobDTO(Long id, String company, String location, String title, boolean isPaid, String postedAgo, String jobDetails, Boolean isInternship,Boolean isPartTime ) {
-	    	this.id = id;
-	    	this.company = company;
-	        this.location = location;
-	        this.title = title;
-	        this.isPaid = isPaid;
-	        this.postedAgo = postedAgo;
-	        this.jobDetails = jobDetails;
-	        this.isInternship = isInternship;
-	        this.isPartTime = isPartTime;
-	    }
+    // Solo se requiere para las solicitudes de creación/actualización de un trabajo
+    @NotNull(message = "La empresa es obligatoria")
+    private Long companyId;      
 
-	    // Getters y Setters
-	    public Long getId() { return id; }
-	    public void setId(Long id) { this.id = id; }
-	    
-	    public String getCompany() { return company; }
-	    public void setCompany(String company) { this.company = company; }
-	    
-	    public String getLocation() { return location; }
-	    public void setLocation(String location) { this.location = location; }
-	    
-	    public String getTitle() { return title; }
-	    public void setTitle(String title) { this.title = title; }
-	    
-	    public boolean isPaid() { return isPaid; }
-	    public void setPaid(boolean paid) { isPaid = paid; }
-	    
-	    public String getPostedAgo() { return postedAgo; }
-	    public void setPostedAgo(String postedAgo) { this.postedAgo = postedAgo; }
-	    
-	    public String getJobDetails() { return jobDetails; }
-	    public void setJobDetails(String jobDetails) { this.jobDetails = jobDetails; }
-	    
-	    public Boolean getIsInternship() { return isInternship; }
-	    public void setIsInternship(Boolean isInternship) { this.isInternship = isInternship; }
+    private String companyName;  
 
-	    public Boolean getIsPartTime() { return isPartTime; }
-	    public void setIsPartTime(Boolean isPartTime) { this.isPartTime = isPartTime; }
+    private Boolean isPaid;
+    private Boolean isInternship;
+    private Boolean isPartTime;
 
+    @NotBlank(message = "La descripción no puede estar en blanco")
+    @Size(max = 1000, message = "La descripción no puede tener más de 1000 caracteres")
+    private String description;
+    
+    @Size(max = 2000, message = "Los detalles del trabajo no pueden tener más de 2000 caracteres")
+    private String jobDetails;
+    
+    @Size(max = 2000, message = "Los requerimientos no pueden tener más de 2000 caracteres")
+    private String requirements;
+
+    // @DecimalMin y @DecimalMax podrían ser útiles aquí para rangos de salario
+    private BigDecimal salary;
+
+    private LocalDateTime postedAt;
+    private LocalDateTime deadline;
+
+    private String postedAgo;
+    
+    private String status;
+
+    // Constructor vacío
+    public JobDTO() {}
+
+    // Constructor completo
+    public JobDTO(Long id, String title, String location, Long companyId, String companyName,
+                  Boolean isPaid, Boolean isInternship, Boolean isPartTime,
+                  String description, String jobDetails, String requirements,
+                  BigDecimal salary, LocalDateTime postedAt, LocalDateTime deadline,
+                  String postedAgo, String status) {
+        this.id = id;
+        this.title = title;
+        this.location = location;
+        this.companyId = companyId;
+        this.companyName = companyName;
+        this.isPaid = isPaid;
+        this.isInternship = isInternship;
+        this.isPartTime = isPartTime;
+        this.description = description;
+        this.jobDetails = jobDetails;
+        this.requirements = requirements;
+        this.salary = salary;
+        this.postedAt = postedAt;
+        this.deadline = deadline;
+        this.postedAgo = postedAgo;
+        this.status = status;
+    }
+
+    // Getters y Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+
+    public Long getCompanyId() { return companyId; }
+    public void setCompanyId(Long companyId) { this.companyId = companyId; }
+
+    public String getCompanyName() { return companyName; }
+    public void setCompanyName(String companyName) { this.companyName = companyName; }
+
+    public Boolean getIsPaid() { return isPaid; }
+    public void setIsPaid(Boolean isPaid) { this.isPaid = isPaid; }
+
+    public Boolean getIsInternship() { return isInternship; }
+    public void setIsInternship(Boolean isInternship) { this.isInternship = isInternship; }
+
+    public Boolean getIsPartTime() { return isPartTime; }
+    public void setIsPartTime(Boolean isPartTime) { this.isPartTime = isPartTime; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getJobDetails() { return jobDetails; }
+    public void setJobDetails(String jobDetails) { this.jobDetails = jobDetails; }
+
+    public String getRequirements() { return requirements; }
+    public void setRequirements(String requirements) { this.requirements = requirements; }
+
+    public BigDecimal getSalary() { return salary; }
+    public void setSalary(BigDecimal salary) { this.salary = salary; }
+
+    public LocalDateTime getPostedAt() { return postedAt; }
+    public void setPostedAt(LocalDateTime postedAt) { this.postedAt = postedAt; }
+
+    public LocalDateTime getDeadline() { return deadline; }
+    public void setDeadline(LocalDateTime deadline) { this.deadline = deadline; }
+
+    public String getPostedAgo() { return postedAgo; }
+    public void setPostedAgo(String postedAgo) { this.postedAgo = postedAgo; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

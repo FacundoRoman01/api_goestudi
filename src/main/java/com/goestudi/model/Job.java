@@ -2,88 +2,153 @@
 
 package com.goestudi.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+
+
+import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
+@Table(name = "jobs")
 public class Job {
 
-	 @Id
-	 @GeneratedValue(strategy = GenerationType.IDENTITY)
-	 private Long id;
-	 
-	 private String company;
-	 private String location;
-	 private String title;
-	 
-	 // Mapea el campo 'isPaid' a la columna 'is_paid' de la base de datos
-	 @Column(name = "is_paid")
-	 private boolean isPaid;
-	 
-	 // Mapea el campo 'postedAgo' a la columna 'posted_ago'
-	 @Column(name = "posted_ago")
-	 private String postedAgo;
-	 
-	 // Mapea el campo 'jobDetails' a la columna 'job_details'
-	 @Column(name = "job_details")
-	 private String jobDetails;
-	 
-	 // Nuevos campos para los filtros
-	 @Column(name = "is_internship")
-	 private Boolean isInternship; // Usar Boolean para permitir valores nulos (true/false/null)
-	 
-	 @Column(name = "is_part_time")
-	 private Boolean isPartTime; // Usar Boolean para permitir valores nulos
-	
-	 
-	 
-	
-	  // Constructor
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String title;
+    private String location;
+    
+    // CAMBIO IMPORTANTE: Reemplazar 'company' String por relación con CompanyProfile
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_profile_id")
+    private CompanyProfile companyProfile;
+
+    @Column(name = "is_paid")
+    private Boolean isPaid;
+
+    @Column(name = "is_internship")
+    private Boolean isInternship;
+
+    @Column(name = "is_part_time")
+    private Boolean isPartTime;
+
+    // NUEVOS CAMPOS 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "job_details", columnDefinition = "TEXT")
+    private String jobDetails; // Mantengo tu campo original
+
+    @Column(columnDefinition = "TEXT")
+    private String requirements;
+
+    private BigDecimal salary; // Opcional
+
+    @Column(name = "posted_at")
+    private LocalDateTime postedAt;
+
+    private LocalDateTime deadline;
+
+    @Enumerated(EnumType.STRING)
+    private JobStatus status = JobStatus.ACTIVE; // Por defecto ACTIVE
+
+    // CAMBIO: Reemplazar postedAgo String por cálculo automático
+   
+
+    // Relación con JobApplication (las postulaciones a este trabajo)
+    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<JobApplication> applications;
+
+    // Enum para status
+    public enum JobStatus {
+        ACTIVE, CLOSED, DRAFT
+    }
+
+    // Constructores
     public Job() {}
 
-    
-    public Job(String company, String location, String title, boolean isPaid, String postedAgo, String jobDetails,Boolean isInternship,Boolean isPartTime  ) {
-        this.company = company;
-        this.location = location;
+    public Job(String title, String location, CompanyProfile companyProfile, 
+               Boolean isPaid, Boolean isInternship, Boolean isPartTime, 
+               String description, String requirements) {
         this.title = title;
+        this.location = location;
+        this.companyProfile = companyProfile;
         this.isPaid = isPaid;
-        this.postedAgo = postedAgo;
-        this.jobDetails = jobDetails;
         this.isInternship = isInternship;
         this.isPartTime = isPartTime;
+        this.description = description;
+        this.requirements = requirements;
+        this.postedAt = LocalDateTime.now();
+        this.status = JobStatus.ACTIVE;
     }
-    
+
+    // Método para calcular "posted ago" dinámicamente
+    public String getPostedAgo() {
+        if (postedAt == null) return "Unknown";
+        
+        LocalDateTime now = LocalDateTime.now();
+        long days = java.time.Duration.between(postedAt, now).toDays();
+        
+        if (days == 0) return "Today";
+        if (days == 1) return "1 day ago";
+        if (days < 7) return days + " days ago";
+        if (days < 30) return (days / 7) + " week" + (days / 7 > 1 ? "s" : "") + " ago";
+        return (days / 30) + " month" + (days / 30 > 1 ? "s" : "") + " ago";
+    }
+
     // Getters y Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    
-    public String getCompany() { return company; }
-    public void setCompany(String company) { this.company = company; }
-
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
-    public boolean isPaid() { return isPaid; }
-    public void setPaid(boolean paid) { isPaid = paid; }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 
-    public String getPostedAgo() { return postedAgo; }
-    public void setPostedAgo(String postedAgo) { this.postedAgo = postedAgo; }
+    public CompanyProfile getCompanyProfile() { return companyProfile; }
+    public void setCompanyProfile(CompanyProfile companyProfile) { this.companyProfile = companyProfile; }
+
+    public Boolean getIsPaid() { return isPaid; }
+    public void setIsPaid(Boolean isPaid) { this.isPaid = isPaid; }
+
+    public Boolean getIsInternship() { return isInternship; }
+    public void setIsInternship(Boolean isInternship) { this.isInternship = isInternship; }
+
+    public Boolean getIsPartTime() { return isPartTime; }
+    public void setIsPartTime(Boolean isPartTime) { this.isPartTime = isPartTime; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
     public String getJobDetails() { return jobDetails; }
     public void setJobDetails(String jobDetails) { this.jobDetails = jobDetails; }
-    
-    public Boolean getIsInternship() { return isInternship; }
-    public void setIsInternship(Boolean isInternship) { this.isInternship = isInternship; }
-    
-    public Boolean getIsPartTime() { return isPartTime; }
-    public void setIsPartTime(Boolean isPartTime) { this.isPartTime = isPartTime; }
-    
-    
-	
+
+    public String getRequirements() { return requirements; }
+    public void setRequirements(String requirements) { this.requirements = requirements; }
+
+    public BigDecimal getSalary() { return salary; }
+    public void setSalary(BigDecimal salary) { this.salary = salary; }
+
+    public LocalDateTime getPostedAt() { return postedAt; }
+    public void setPostedAt(LocalDateTime postedAt) { this.postedAt = postedAt; }
+
+    public LocalDateTime getDeadline() { return deadline; }
+    public void setDeadline(LocalDateTime deadline) { this.deadline = deadline; }
+
+    public JobStatus getStatus() { return status; }
+    public void setStatus(JobStatus status) { this.status = status; }
+
+    public List<JobApplication> getApplications() { return applications; }
+    public void setApplications(List<JobApplication> applications) { this.applications = applications; }
+
+    /**
+     * Obtiene el nombre de la empresa de forma segura
+     * @return Nombre de la empresa o "Empresa Desconocida" si no existe
+     */
+    public String getCompanyName() {
+        return companyProfile != null ? companyProfile.getName() : "Empresa Desconocida";
+    }
 }
