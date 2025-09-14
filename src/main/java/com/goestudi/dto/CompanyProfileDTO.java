@@ -1,23 +1,47 @@
 package com.goestudi.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.PastOrPresent;
+import org.hibernate.validator.constraints.URL;
 import java.time.LocalDateTime;
+import java.util.List;
 
-/**
- * DTO para la entidad CompanyProfile, sin usar anotaciones de Lombok.
- */
+
 public class CompanyProfileDTO {
     private Long id;
+    
+    @NotBlank(message = "El nombre de la empresa no puede estar vacío.")
+    @Size(min = 2, max = 255, message = "El nombre debe tener entre 2 y 255 caracteres.")
     private String name;
+    
+    @NotBlank(message = "La descripción de la empresa no puede estar vacía.")
+    @Size(min = 10, max = 2000, message = "La descripción debe tener entre 10 y 2000 caracteres.")
     private String description;
+    
+    @NotBlank(message = "La ubicación no puede estar vacía.")
     private String location;
+    
+    @URL(message = "El sitio web debe ser una URL válida.")
     private String website;
+    
     private String industry;
+    
+    @URL(message = "La URL del logo debe ser válida.")
     private String logoUrl;
+    
     private String employeeCount;
+    
     private Integer foundedYear;
+    
     private LocalDateTime createdAt;
+    
     private LocalDateTime updatedAt;
+    
     private Boolean isVerified;
+    
+    private List<JobDTO> jobs;
 
     public CompanyProfileDTO() {
     }
@@ -133,4 +157,12 @@ public class CompanyProfileDTO {
     public void setIsVerified(Boolean isVerified) {
         this.isVerified = isVerified;
     }
+
+	public List<JobDTO> getJobs() {
+		return jobs;
+	}
+
+	public void setJobs(List<JobDTO> jobs) {
+		this.jobs = jobs;
+	}
 }

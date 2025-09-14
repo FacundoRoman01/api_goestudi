@@ -17,12 +17,7 @@ public class JobDTO {
     @NotBlank(message = "La ubicación no puede estar en blanco")
     private String location;
 
-    // Solo se requiere para las solicitudes de creación/actualización de un trabajo
-    @NotNull(message = "La empresa es obligatoria")
-    private Long companyId;      
-
     private String companyName;  
-
     private Boolean isPaid;
     private Boolean isInternship;
     private Boolean isPartTime;
@@ -35,9 +30,8 @@ public class JobDTO {
     private String jobDetails;
     
     @Size(max = 2000, message = "Los requerimientos no pueden tener más de 2000 caracteres")
-    private String requirements;
+    private String requirements; //lista de requerimiento
 
-    // @DecimalMin y @DecimalMax podrían ser útiles aquí para rangos de salario
     private BigDecimal salary;
 
     private LocalDateTime postedAt;
@@ -51,7 +45,7 @@ public class JobDTO {
     public JobDTO() {}
 
     // Constructor completo
-    public JobDTO(Long id, String title, String location, Long companyId, String companyName,
+    public JobDTO(Long id, String title, String location, String companyName,
                   Boolean isPaid, Boolean isInternship, Boolean isPartTime,
                   String description, String jobDetails, String requirements,
                   BigDecimal salary, LocalDateTime postedAt, LocalDateTime deadline,
@@ -59,7 +53,6 @@ public class JobDTO {
         this.id = id;
         this.title = title;
         this.location = location;
-        this.companyId = companyId;
         this.companyName = companyName;
         this.isPaid = isPaid;
         this.isInternship = isInternship;
@@ -83,9 +76,6 @@ public class JobDTO {
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
-
-    public Long getCompanyId() { return companyId; }
-    public void setCompanyId(Long companyId) { this.companyId = companyId; }
 
     public String getCompanyName() { return companyName; }
     public void setCompanyName(String companyName) { this.companyName = companyName; }

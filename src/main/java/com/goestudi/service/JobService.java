@@ -11,11 +11,15 @@ import com.goestudi.dto.JobDTO;
 import com.goestudi.model.Job;
 import com.goestudi.model.CompanyProfile;
 import com.goestudi.repository.JobRepository;
-import com.goestudi.repository.CompanyProfileRepository;
 import com.goestudi.specification.JobSpecification;
 import com.goestudi.exception.JobNotFoundException;
+import com.goestudi.model.Job.JobStatus;
 
 import jakarta.validation.Valid;
+import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @Service
 public class JobService {
@@ -23,15 +27,13 @@ public class JobService {
     private static final Logger log = LoggerFactory.getLogger(JobService.class);
 
     private final JobRepository jobRepository;
-    private final CompanyProfileRepository companyProfileRepository;
 
-    public JobService(JobRepository jobRepository, CompanyProfileRepository companyProfileRepository) {
+    public JobService(JobRepository jobRepository) {
         this.jobRepository = jobRepository;
-        this.companyProfileRepository = companyProfileRepository;
     }
 
     /**
-     * Finds jobs based on filters and returns them in a paginated DTO format.
+     * Busca trabajos basados en filtros y los devuelve en un formato DTO paginado.
      */
     public Page<JobDTO> findJobsByFilters(
         String keyword,
@@ -44,7 +46,7 @@ public class JobService {
                 keyword, location, isInternship, isPartTime);
 
         try {
-            Thread.sleep(1500); // Simulated delay for demonstration
+            Thread.sleep(1500); // Simulamos un retraso para la demostración
 
             Page<Job> jobPage = jobRepository.findAll(
                 JobSpecification.findByFilters(keyword, location, isInternship, isPartTime),
@@ -65,13 +67,12 @@ public class JobService {
     }
 
     /**
-     * Creates a new job based on the provided DTO.
+     * Crea un nuevo trabajo basado en el DTO y el perfil de empresa proporcionado.
      */
     @Transactional
-    public JobDTO createJob(JobDTO jobDTO) {
+    public JobDTO createJob(CompanyProfile companyProfile, @Valid JobDTO jobDTO) {
         log.info("SERVICE - Creando un nuevo trabajo con título: {}", jobDTO.getTitle());
 
-        // 1. Convertir DTO a entidad Job
         Job job = new Job();
         job.setTitle(jobDTO.getTitle());
         job.setLocation(jobDTO.getLocation());
@@ -82,117 +83,103 @@ public class JobService {
         job.setJobDetails(jobDTO.getJobDetails());
         job.setRequirements(jobDTO.getRequirements());
         job.setSalary(jobDTO.getSalary());
+        job.setPostedAt(LocalDateTime.now());
+        job.setDeadline(jobDTO.getDeadline());
+        job.setStatus(JobStatus.valueOf(jobDTO.getStatus()));
 
-        // 2. Relacionar con la entidad CompanyProfile
-        if (jobDTO.getCompanyId() != null) {
-            CompanyProfile companyProfile = companyProfileRepository.findById(jobDTO.getCompanyId())
-                .orElseThrow(() -> new IllegalArgumentException("Company not found with ID: " + jobDTO.getCompanyId()));
-            job.setCompanyProfile(companyProfile);
-        } else {
-            throw new IllegalArgumentException("Company ID is required to create a job.");
-        }
-
-        // 3. Guardar en la base de datos
+        // Relacionar con el CompanyProfile obtenido de forma segura
+        job.setCompanyProfile(companyProfile);
+        
         Job savedJob = jobRepository.save(job);
         log.info("SERVICE - Trabajo creado exitosamente con ID: {}", savedJob.getId());
-
-        // 4. Convertir la entidad guardada a DTO y retornarla
         return convertToDto(savedJob);
     }
 
     /**
-     * Updates an existing job.
-     * @param id The ID of the job to update.
-     * @param jobDTO The DTO with the updated job information.
-     * @return The updated JobDTO.
+     * Actualiza un trabajo existente si el perfil de empresa coincide.
      */
     @Transactional
-    public JobDTO updateJob(Long id, @Valid JobDTO jobDTO) {
+    public Optional<JobDTO> updateJob(CompanyProfile companyProfile, Long id, @Valid JobDTO jobDTO) {
         log.info("SERVICE - Actualizando trabajo con ID: {}", id);
 
-        // 1. Encontrar el trabajo existente. Si no se encuentra, lanzar una excepción.
-        Job existingJob = jobRepository.findById(id)
-            .orElseThrow(() -> new JobNotFoundException("Job not found with ID: " + id));
+        Optional<Job> jobOptional = jobRepository.findById(id);
 
-        // 2. Actualizar los campos de la entidad con la información del DTO.
-        existingJob.setTitle(jobDTO.getTitle());
-        existingJob.setLocation(jobDTO.getLocation());
-        existingJob.setIsPaid(jobDTO.getIsPaid() != null ? jobDTO.getIsPaid() : false);
-        existingJob.setIsInternship(jobDTO.getIsInternship() != null ? jobDTO.getIsInternship() : false);
-        existingJob.setIsPartTime(jobDTO.getIsPartTime() != null ? jobDTO.getIsPartTime() : false);
-        existingJob.setDescription(jobDTO.getDescription());
-        existingJob.setJobDetails(jobDTO.getJobDetails());
-        existingJob.setRequirements(jobDTO.getRequirements());
-        existingJob.setSalary(jobDTO.getSalary());
+        if (jobOptional.isPresent()) {
+            Job existingJob = jobOptional.get();
 
-        // 3. Opcionalmente, actualizar la relación con la compañía si el ID de la compañía ha cambiado.
-        if (jobDTO.getCompanyId() != null && !jobDTO.getCompanyId().equals(existingJob.getCompanyProfile().getId())) {
-            CompanyProfile companyProfile = companyProfileRepository.findById(jobDTO.getCompanyId())
-                .orElseThrow(() -> new IllegalArgumentException("Company not found with ID: " + jobDTO.getCompanyId()));
-            existingJob.setCompanyProfile(companyProfile);
+            // Verificación de seguridad: solo la empresa propietaria puede actualizar el trabajo
+            if (!existingJob.getCompanyProfile().getId().equals(companyProfile.getId())) {
+                log.warn("SECURITY_ERROR - Intento de actualizar un trabajo no propio. ID trabajo: {}, ID empresa: {}", id, companyProfile.getId());
+                return Optional.empty(); // No autorizado
+            }
+
+            existingJob.setTitle(jobDTO.getTitle());
+            existingJob.setLocation(jobDTO.getLocation());
+            existingJob.setIsPaid(jobDTO.getIsPaid() != null ? jobDTO.getIsPaid() : false);
+            existingJob.setIsInternship(jobDTO.getIsInternship() != null ? jobDTO.getIsInternship() : false);
+            existingJob.setIsPartTime(jobDTO.getIsPartTime() != null ? jobDTO.getIsPartTime() : false);
+            existingJob.setDescription(jobDTO.getDescription());
+            existingJob.setJobDetails(jobDTO.getJobDetails());
+            existingJob.setRequirements(jobDTO.getRequirements());
+            existingJob.setSalary(jobDTO.getSalary());
+            existingJob.setDeadline(jobDTO.getDeadline());
+            existingJob.setStatus(JobStatus.valueOf(jobDTO.getStatus()));
+
+            Job updatedJob = jobRepository.save(existingJob);
+            log.info("SERVICE - Trabajo actualizado exitosamente con ID: {}", updatedJob.getId());
+            return Optional.of(convertToDto(updatedJob));
         }
 
-        // 4. Guardar los cambios.
-        Job updatedJob = jobRepository.save(existingJob);
-        log.info("SERVICE - Trabajo actualizado exitosamente con ID: {}", updatedJob.getId());
-        
-        // 5. Convertir y retornar el DTO.
-        return convertToDto(updatedJob);
+        log.warn("SERVICE - Trabajo no encontrado con ID: {}", id);
+        throw new JobNotFoundException("Job not found with ID: " + id);
     }
 
     /**
-     * Deletes a job by its ID.
-     * @param id The ID of the job to delete.
+     * Elimina un trabajo si el perfil de empresa coincide.
      */
     @Transactional
-    public void deleteJob(Long id) {
+    public boolean deleteJob(CompanyProfile companyProfile, Long id) {
         log.info("SERVICE - Intentando eliminar trabajo con ID: {}", id);
-
-        // 1. Verificar si el trabajo existe antes de intentar eliminarlo.
-        if (!jobRepository.existsById(id)) {
-            throw new JobNotFoundException("Job not found with ID: " + id);
-        }
-
-        // 2. Eliminar el trabajo.
-        jobRepository.deleteById(id);
-        log.info("SERVICE - Trabajo con ID: {} eliminado exitosamente.", id);
-    }
-
-    private JobDTO convertToDto(Job job) {
-        try {
-            return new JobDTO(
-                job.getId(),
-                job.getTitle(),
-                job.getLocation(),
-                job.getCompanyProfile() != null ? job.getCompanyProfile().getId() : null,
-                getCompanyNameSafe(job),
-                job.getIsPaid(),
-                job.getIsInternship(),
-                job.getIsPartTime(),
-                job.getDescription(),
-                job.getJobDetails(),
-                job.getRequirements(),
-                job.getSalary(),
-                job.getPostedAt(),
-                job.getDeadline(),
-                job.getPostedAgo(),
-                job.getStatus() != null ? job.getStatus().name() : "ACTIVE"
-            );
-        } catch (Exception e) {
-            throw new RuntimeException("Error convirtiendo job ID " + job.getId(), e);
-        }
-    }
-
-    private String getCompanyNameSafe(Job job) {
-        try {
-            if (job.getCompanyProfile() != null && job.getCompanyProfile().getName() != null) {
-                return job.getCompanyProfile().getName();
+        
+        Optional<Job> jobOptional = jobRepository.findById(id);
+        
+        if (jobOptional.isPresent()) {
+            Job job = jobOptional.get();
+            if (job.getCompanyProfile().getId().equals(companyProfile.getId())) {
+                jobRepository.delete(job);
+                log.info("SERVICE - Trabajo con ID: {} eliminado exitosamente.", id);
+                return true;
             }
-            return "Empresa no especificada";
-
-        } catch (Exception e) {
-            log.warn("Error obteniendo company name para job ID {}: {}", job.getId(), e.getMessage());
-            return "Empresa no especificada";
+            log.warn("SECURITY_ERROR - Intento de eliminar un trabajo no propio. ID trabajo: {}, ID empresa: {}", id, companyProfile.getId());
+            return false; // No autorizado
         }
+        
+        log.warn("SERVICE - Trabajo no encontrado para eliminar con ID: {}", id);
+        return false;
+    }
+    
+    /**
+     * Convierte una entidad Job a un DTO.
+     */
+    public JobDTO convertToDto(Job job) {
+        JobDTO dto = new JobDTO();
+        dto.setId(job.getId());
+        dto.setTitle(job.getTitle());
+        dto.setLocation(job.getLocation());
+        dto.setIsPaid(job.getIsPaid());
+        dto.setIsInternship(job.getIsInternship());
+        dto.setIsPartTime(job.getIsPartTime());
+        dto.setDescription(job.getDescription());
+        dto.setJobDetails(job.getJobDetails());
+        dto.setRequirements(job.getRequirements());
+        dto.setSalary(job.getSalary());
+        dto.setPostedAt(job.getPostedAt());
+        dto.setDeadline(job.getDeadline());
+        dto.setStatus(job.getStatus().name());
+        dto.setPostedAgo(job.getPostedAgo());
+        if (job.getCompanyProfile() != null) {
+            dto.setCompanyName(job.getCompanyProfile().getName());
+        }
+        return dto;
     }
 }
