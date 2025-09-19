@@ -2,6 +2,8 @@ package com.goestudi.service;
 
 import com.goestudi.model.User;
 import com.goestudi.repository.UserRepository;
+import com.goestudi.securiry.CustomUserDetails;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,8 +25,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con el email: " + email));
 
-        // Por ahora, solo usamos el email y la contraseña, y una lista vacía de autoridades.
-        // Más adelante, podemos mejorar esto para incluir los roles (USER, COMPANY, ADMIN).
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), new ArrayList<>());
+        return new CustomUserDetails(user); // <-- así podemos obtener userProfileId luego
     }
+
+    
+    
 }

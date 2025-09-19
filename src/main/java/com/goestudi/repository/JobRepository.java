@@ -1,6 +1,6 @@
 package com.goestudi.repository;
 
-
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,5 +21,9 @@ public interface JobRepository extends JpaRepository<Job, Long>, JpaSpecificatio
      * @return Una página de objetos Job.
      */
     Page<Job> findByCompanyProfile(CompanyProfile companyProfile, Pageable pageable);
+    
+    List<Job> findByCompanyProfile(CompanyProfile companyProfile);
+    
+
 
 }

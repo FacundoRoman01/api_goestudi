@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.goestudi.dto.AuthResponseDTO;
+import com.goestudi.dto.MessageResponseDTO;
 import com.goestudi.dto.UserDTO;
 import com.goestudi.service.UserService;
 
@@ -23,9 +24,9 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<MessageResponseDTO> register(@RequestBody UserDTO userDTO) {
         userService.register(userDTO);
-        return ResponseEntity.ok("Usuario registrado exitosamente");
+        return ResponseEntity.ok(new MessageResponseDTO("Usuario registrado exitosamente"));
     }
     
     @PostMapping("/login")

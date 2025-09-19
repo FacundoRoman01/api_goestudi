@@ -32,6 +32,8 @@ public class JobDTO {
     @Size(max = 2000, message = "Los requerimientos no pueden tener más de 2000 caracteres")
     private String requirements; //lista de requerimiento
 
+    private String companyLogoUrl;
+    
     private BigDecimal salary;
 
     private LocalDateTime postedAt;
@@ -49,7 +51,7 @@ public class JobDTO {
                   Boolean isPaid, Boolean isInternship, Boolean isPartTime,
                   String description, String jobDetails, String requirements,
                   BigDecimal salary, LocalDateTime postedAt, LocalDateTime deadline,
-                  String postedAgo, String status) {
+                  String postedAgo, String status, String companyLogoUrl) {
         this.id = id;
         this.title = title;
         this.location = location;
@@ -65,6 +67,7 @@ public class JobDTO {
         this.deadline = deadline;
         this.postedAgo = postedAgo;
         this.status = status;
+        this.companyLogoUrl = companyLogoUrl;
     }
 
     // Getters y Setters
@@ -112,4 +115,12 @@ public class JobDTO {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+	public String getCompanyLogoUrl() {
+		return companyLogoUrl;
+	}
+
+	public void setCompanyLogoUrl(String companyLogoUrl) {
+		this.companyLogoUrl = companyLogoUrl;
+	}
 }

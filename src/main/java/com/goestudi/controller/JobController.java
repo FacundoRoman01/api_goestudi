@@ -16,6 +16,7 @@ import com.goestudi.model.CompanyProfile;
 import com.goestudi.model.User;
 import com.goestudi.model.Job;
 import com.goestudi.repository.JobRepository;
+import com.goestudi.securiry.CustomUserDetails;
 import com.goestudi.service.JobService;
 import com.goestudi.service.CompanyProfileService;
 import com.goestudi.exception.JobNotFoundException;
@@ -29,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -58,23 +60,35 @@ public class JobController {
         @ApiResponse(responseCode = "403", description = "Prohibido (sin perfil de empresa)"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    @PostMapping("/meCompany")
-    public ResponseEntity<JobDTO> createJob(
+    
+    
+    @PostMapping("/createJob")
+    public ResponseEntity<?> createJob(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody JobDTO jobDTO) {
-        log.info("CONTROLLER - Creando trabajo para el usuario: {}", userDetails.getUsername());
-        
-        User user = (User) userDetails;
-        Optional<CompanyProfile> companyProfileOptional = companyProfileService.findByUser(user);
+        try {
+            log.info("CONTROLLER - Creando trabajo para el usuario: {}", userDetails.getUsername());
+            
+            CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
+            User user = customUserDetails.getUser();
+            Optional<CompanyProfile> companyProfileOptional = companyProfileService.findByUser(user);
 
-        if (companyProfileOptional.isEmpty()) {
-            log.warn("CONTROLLER - Perfil de empresa no encontrado para el usuario: {}", user.getEmail());
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            if (companyProfileOptional.isEmpty()) {
+                log.warn("CONTROLLER - Perfil de empresa no encontrado para el usuario: {}", user.getEmail());
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Perfil de empresa no encontrado"));
+            }
+            
+            JobDTO createdJob = jobService.createJob(companyProfileOptional.get(), jobDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdJob);
+            
+        } catch (Exception e) {
+            log.error("CONTROLLER - Error al crear trabajo: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Error interno del servidor: " + e.getMessage()));
         }
-        
-        JobDTO createdJob = jobService.createJob(companyProfileOptional.get(), jobDTO);
-        return new ResponseEntity<>(createdJob, HttpStatus.CREATED);
     }
+    
     
     // Método para OBTENER todos los trabajos
     @Operation(summary = "Obtener una lista de trabajos con filtros opcionales")
@@ -111,6 +125,7 @@ public class JobController {
         @ApiResponse(responseCode = "403", description = "Prohibido (intento de modificar un trabajo no propio)"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
+ // Método updateJob corregido
     @PutMapping("/meCompany/{id}")
     public ResponseEntity<JobDTO> updateJob(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -118,7 +133,9 @@ public class JobController {
             @Valid @RequestBody JobDTO jobDTO) {
         log.info("CONTROLLER - Actualizando trabajo con ID: {} para el usuario: {}", id, userDetails.getUsername());
         
-        User user = (User) userDetails;
+        // CORREGIDO: Usar CustomUserDetails en lugar de cast directo
+        CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
+        User user = customUserDetails.getUser();
         Optional<CompanyProfile> companyProfileOptional = companyProfileService.findByUser(user);
 
         if (companyProfileOptional.isEmpty()) {
@@ -137,21 +154,16 @@ public class JobController {
         }
     }
 
-    // Método para ELIMINAR un trabajo por su ID
-    @Operation(summary = "Eliminar un trabajo por ID")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Trabajo eliminado exitosamente"),
-        @ApiResponse(responseCode = "404", description = "Trabajo no encontrado"),
-        @ApiResponse(responseCode = "403", description = "Prohibido (intento de eliminar un trabajo no propio)"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
-    })
+    // Método deleteJob corregido
     @DeleteMapping("/meCompany/{id}")
     public ResponseEntity<Void> deleteJob(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long id) {
         log.info("CONTROLLER - Eliminando trabajo con ID: {} para el usuario: {}", id, userDetails.getUsername());
         
-        User user = (User) userDetails;
+        // CORREGIDO: Usar CustomUserDetails en lugar de cast directo
+        CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
+        User user = customUserDetails.getUser();
         Optional<CompanyProfile> companyProfileOptional = companyProfileService.findByUser(user);
 
         if (companyProfileOptional.isEmpty()) {
@@ -172,16 +184,66 @@ public class JobController {
         }
     }
     
-    /**
-     * Obtiene todos los trabajos publicados por la empresa autenticada.
-     */
+    
+ // Agrega este método a tu JobController obten el trabajo por id
+
+    @GetMapping("/meCompany/{id}")
+    public ResponseEntity<?> getJobById(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id) {
+        try {
+            log.info("CONTROLLER - Obteniendo trabajo con ID: {} para el usuario: {}", id, userDetails.getUsername());
+            
+            CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
+            User user = customUserDetails.getUser();
+            Optional<CompanyProfile> companyProfileOptional = companyProfileService.findByUser(user);
+
+            if (companyProfileOptional.isEmpty()) {
+                log.warn("CONTROLLER - Perfil de empresa no encontrado para el usuario: {}", user.getEmail());
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Perfil de empresa no encontrado"));
+            }
+
+            Optional<Job> jobOptional = jobRepository.findById(id);
+            
+            if (jobOptional.isEmpty()) {
+                log.warn("CONTROLLER - Trabajo no encontrado con ID: {}", id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Trabajo no encontrado"));
+            }
+            
+            Job job = jobOptional.get();
+            
+            // Verificar que el trabajo pertenece a la empresa del usuario autenticado
+            if (!job.getCompanyProfile().getId().equals(companyProfileOptional.get().getId())) {
+                log.warn("SECURITY_ERROR - Intento de acceder a un trabajo no propio. ID trabajo: {}, ID empresa: {}", 
+                        id, companyProfileOptional.get().getId());
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "No tienes permisos para ver este trabajo"));
+            }
+            
+            JobDTO jobDTO = jobService.convertToDto(job);
+            return ResponseEntity.ok(jobDTO);
+            
+        } catch (Exception e) {
+            log.error("CONTROLLER - Error al obtener trabajo con ID {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Error interno del servidor: " + e.getMessage()));
+        }
+    }
+    
+    
+
+    // Método getMyJobs corregido
     @GetMapping("/company")
     public ResponseEntity<Page<JobDTO>> getMyJobs(
             @AuthenticationPrincipal UserDetails userDetails,
             @PageableDefault(size = 12) Pageable pageable) {
         log.info("CONTROLLER - Buscando trabajos de la empresa para el usuario: {}", userDetails.getUsername());
         
-        User user = (User) userDetails;
+        // CORREGIDO: Usar CustomUserDetails en lugar de cast directo
+        CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
+        User user = customUserDetails.getUser();
         Optional<CompanyProfile> companyProfileOptional = companyProfileService.findByUser(user);
 
         if (companyProfileOptional.isEmpty()) {

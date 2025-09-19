@@ -19,4 +19,6 @@ public interface CompanyProfileRepository extends JpaRepository<CompanyProfile, 
 
     // Verificar si ya existe un perfil para un usuario
     boolean existsByUserId(Long userId);
+    
+    Optional<CompanyProfile> findByUser_Email(String email);
 }

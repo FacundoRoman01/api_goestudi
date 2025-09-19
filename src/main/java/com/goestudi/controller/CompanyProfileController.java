@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +40,7 @@ public class CompanyProfileController {
      * @return ResponseEntity con el DTO del perfil de empresa o un estado 404 si no se encuentra.
      */
     @GetMapping("/meCompany")
+   
     public ResponseEntity<CompanyProfileDTO> getMyProfile(@AuthenticationPrincipal UserDetails userDetails) {
         log.info("CONTROLLER - Buscando perfil para el usuario autenticado: {}", userDetails.getUsername());
         
@@ -67,6 +69,7 @@ public class CompanyProfileController {
      * @return ResponseEntity con el DTO del perfil guardado o un estado 404 si el usuario no existe.
      */
     @PostMapping("/meCompany")
+    
     public ResponseEntity<CompanyProfileDTO> createOrUpdateMyProfile(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody CompanyProfileDTO companyProfileDTO) {

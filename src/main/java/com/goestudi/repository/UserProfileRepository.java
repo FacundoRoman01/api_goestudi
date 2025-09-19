@@ -16,4 +16,5 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
      * @return Un Optional que contiene el UserProfile si se encuentra, o vacío si no.
      */
     Optional<UserProfile> findByUserId(Long userId);
+    Optional<UserProfile> findByUser_Email(String email);
 }
