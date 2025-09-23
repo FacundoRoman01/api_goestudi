@@ -18,6 +18,10 @@ public class JobApplicationResponseDTO {
     private String coverLetter;
     private JobDTO job;
     private CandidateDTO candidate;
+    private String cvFilename;     // Nombre del archivo (ej: mi_cv.pdf)
+    private String cvContentType;  // Tipo MIME (ej: application/pdf)
+    private boolean hasCv;         // Para saber si tiene CV
+
 
 
     // Constructores
@@ -26,6 +30,7 @@ public class JobApplicationResponseDTO {
     public JobApplicationResponseDTO(Long id, String applicantName, String jobTitle, 
                                    String companyName, ApplicationStatus status, 
                                    LocalDateTime appliedAt, LocalDateTime reviewedAt,JobDTO job , String coverLetter, CandidateDTO candidate
+                                   ,String cvFilename, String cvContentType,  boolean hasCv
                                    ) {
         this.id = id;
         this.applicantName = applicantName;
@@ -37,6 +42,9 @@ public class JobApplicationResponseDTO {
         this.job = job;
         this.coverLetter = coverLetter;
         this.setCandidate(candidate);
+        this.cvFilename = cvFilename;
+        this.cvContentType = cvContentType;
+        this.hasCv = hasCv;
 
     }
 
@@ -85,6 +93,17 @@ public class JobApplicationResponseDTO {
 	public void setCandidate(CandidateDTO candidate) {
 		this.candidate = candidate;
 	}
+	
+	
+	public String getCvFilename() { return cvFilename; }
+	public void setCvFilename(String cvFilename) { this.cvFilename = cvFilename; }
+
+	public String getCvContentType() { return cvContentType; }
+	public void setCvContentType(String cvContentType) { this.cvContentType = cvContentType; }
+
+	public boolean isHasCv() { return hasCv; }
+	public void setHasCv(boolean hasCv) { this.hasCv = hasCv; }
+
 
 
 }

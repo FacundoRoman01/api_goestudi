@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.goestudi.model.CompanyProfile;
@@ -23,6 +25,16 @@ public interface JobRepository extends JpaRepository<Job, Long>, JpaSpecificatio
     Page<Job> findByCompanyProfile(CompanyProfile companyProfile, Pageable pageable);
     
     List<Job> findByCompanyProfile(CompanyProfile companyProfile);
+    
+    
+    /*@Query(value = """
+    	    SELECT DISTINCT LOWER(SUBSTRING_INDEX(j.title, ' ', 1)) AS keyword
+    	    FROM jobs j
+    	    WHERE LOWER(j.title) LIKE CONCAT('%', :keyword, '%')
+    	    LIMIT 15
+    	    """, nativeQuery = true)
+    	List<String> findTitleFirstWordsByKeyword(@Param("keyword") String keyword);*/
+
     
 
 

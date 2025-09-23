@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -256,4 +257,8 @@ public class JobController {
         
         return new ResponseEntity<>(dtoPage, HttpStatus.OK);
     }
+    
+    
+    
+    
 }

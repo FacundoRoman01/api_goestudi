@@ -75,15 +75,22 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
     
+ // Configuración de CORS consolidada
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        // Agrega todos los orígenes permitidos aquí, incluyendo 5174 y 5500
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:5500", 
+            "http://localhost:5174", 
+            "http://localhost:5173", 
+            "http://127.0.0.1:5500"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/**", configuration); // Aplica a todos los paths
         return source;
     }
 }

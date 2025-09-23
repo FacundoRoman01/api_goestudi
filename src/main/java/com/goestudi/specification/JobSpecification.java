@@ -1,6 +1,7 @@
 package com.goestudi.specification;
 
 import com.goestudi.model.Job;
+import com.goestudi.model.Location;
 
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -22,7 +23,7 @@ public class JobSpecification {
      */
 	public static Specification<Job> findByFilters(
 		    String keyword,
-		    String location,
+		    Location location,
 		    Boolean isInternship,
 		    Boolean isPartTime) {
 
@@ -61,9 +62,8 @@ public class JobSpecification {
 		            ));
 		        }
 
-		        if (location != null && !location.isEmpty()) {
-		            String likeLocation = "%" + location.toLowerCase() + "%";
-		            predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("location")), likeLocation));
+		        if (location != null) {
+		            predicates.add(criteriaBuilder.equal(root.get("location"), location));
 		        }
 
 		        if (isInternship != null) {

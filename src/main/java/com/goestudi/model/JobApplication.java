@@ -33,6 +33,18 @@ public class JobApplication {
 
     @Column(name = "cover_letter", columnDefinition = "TEXT")
     private String coverLetter; // Carta de presentación (opcional)
+    
+    
+    @Lob
+    @Column(name = "cv_file", columnDefinition = "LONGBLOB")
+    private byte[] cvFile; //guarda el binario del archivo (BLOB).
+
+    @Column(name = "cv_filename")
+    private String cvFilename; //nombre del archivo (ej: "cv_facundo.pdf").
+
+    @Column(name = "cv_content_type")
+    private String cvContentType; //tipo MIME (application/pdf).
+    
 
     @Column(columnDefinition = "TEXT")
     private String notes; // Notas internas de la empresa
@@ -187,4 +199,16 @@ public class JobApplication {
 
     public String getReviewedBy() { return reviewedBy; }
     public void setReviewedBy(String reviewedBy) { this.reviewedBy = reviewedBy; }
+    
+    
+    public byte[] getCvFile() { return cvFile; }
+    public void setCvFile(byte[] cvFile) { this.cvFile = cvFile; }
+
+    public String getCvFilename() { return cvFilename; }
+    public void setCvFilename(String cvFilename) { this.cvFilename = cvFilename; }
+
+    public String getCvContentType() { return cvContentType; }
+    public void setCvContentType(String cvContentType) { this.cvContentType = cvContentType; }
+
+    
 }

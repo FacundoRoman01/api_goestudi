@@ -5,6 +5,7 @@ import com.goestudi.service.JobApplicationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -27,6 +28,39 @@ public class JobApplicationController {
         JobApplicationResponseDTO response = jobApplicationService.applyByEmail(email, request);
         return ResponseEntity.ok(response);
     }
+    
+    
+    
+    @PostMapping(value = "/apply-with-cv", consumes = {"multipart/form-data"})
+    public ResponseEntity<JobApplicationResponseDTO> applyWithCv(
+            @RequestPart("request") JobApplicationRequestDTO request,
+            @RequestPart(value = "cvFile", required = false) MultipartFile cvFile,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        JobApplicationResponseDTO response = jobApplicationService.applyWithCv(email, request, cvFile);
+        return ResponseEntity.ok(response);
+    }
+
+    
+    
+    
+    @GetMapping("/{id}/cv")
+    public ResponseEntity<byte[]> downloadCv(@PathVariable Long id) {
+        var application = jobApplicationService.getApplicationEntityById(id);
+
+        if (application.getCvFile() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + application.getCvFilename() + "\"")
+                .header("Content-Type", application.getCvContentType())
+                .body(application.getCvFile());
+    }
+
+    
+    
     
     
  // AGREGAR este método a tu JobApplicationController

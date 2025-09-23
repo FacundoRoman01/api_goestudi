@@ -2,6 +2,9 @@ package com.goestudi.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import com.goestudi.model.Location;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -14,8 +17,8 @@ public class JobDTO {
     @Size(max = 100, message = "El título no puede tener más de 100 caracteres")
     private String title;
     
-    @NotBlank(message = "La ubicación no puede estar en blanco")
-    private String location;
+    
+    private Location location;
 
     private String companyName;  
     private Boolean isPaid;
@@ -47,7 +50,7 @@ public class JobDTO {
     public JobDTO() {}
 
     // Constructor completo
-    public JobDTO(Long id, String title, String location, String companyName,
+    public JobDTO(Long id, String title, Location location, String companyName,
                   Boolean isPaid, Boolean isInternship, Boolean isPartTime,
                   String description, String jobDetails, String requirements,
                   BigDecimal salary, LocalDateTime postedAt, LocalDateTime deadline,
@@ -77,8 +80,8 @@ public class JobDTO {
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    public Location getLocation() { return location; }
+    public void setLocation(Location location) { this.location = location; }
 
     public String getCompanyName() { return companyName; }
     public void setCompanyName(String companyName) { this.companyName = companyName; }

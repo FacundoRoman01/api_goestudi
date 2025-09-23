@@ -10,4 +10,6 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
     List<JobApplication> findByJobId(Long jobId);
     
     List<JobApplication> findByJobIn(List<Job> jobs);
+    
+    
 }

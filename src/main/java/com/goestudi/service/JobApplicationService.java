@@ -8,6 +8,7 @@ import com.goestudi.repository.JobRepository;
 import com.goestudi.repository.UserProfileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.stream.Collectors;
 import java.util.ArrayList;
@@ -81,6 +82,13 @@ public class JobApplicationService {
         dto.setAppliedAt(application.getAppliedAt());
         dto.setCoverLetter(application.getCoverLetter());
         dto.setReviewedAt(application.getReviewedAt());
+     // ✅ Info del CV del candidato
+        dto.setCvFilename(application.getCvFilename());        // nombre del archivo
+        dto.setCvContentType(application.getCvContentType());  // tipo MIME, ej: application/pdf
+        dto.setHasCv(application.getCvFile() != null);         // true si tiene archivo
+
+        
+        
 
         // Info del Job
         JobDTO jobDto = new JobDTO();
@@ -195,6 +203,38 @@ public class JobApplicationService {
     }
 
     
+    public JobApplication getApplicationEntityById(Long id) {
+        return jobApplicationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Postulación no encontrada"));
+    }
+
+    
+    
+
+    @Transactional
+    public JobApplicationResponseDTO applyWithCv(String email, JobApplicationRequestDTO dto, MultipartFile cvFile) {
+        UserProfile userProfile = userProfileRepository.findByUser_Email(email)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Job job = jobRepository.findById(dto.getJobId())
+            .orElseThrow(() -> new RuntimeException("Trabajo no encontrado"));
+
+        JobApplication application = new JobApplication(userProfile, job, dto.getCoverLetter());
+
+        if (cvFile != null && !cvFile.isEmpty()) {
+            try {
+                application.setCvFile(cvFile.getBytes());
+                application.setCvFilename(cvFile.getOriginalFilename());
+                application.setCvContentType(cvFile.getContentType());
+            } catch (Exception e) {
+                throw new RuntimeException("Error guardando el archivo", e);
+            }
+        }
+
+        jobApplicationRepository.save(application);
+        return mapToResponse(application);
+    }
+
     
     
     

@@ -1,7 +1,9 @@
 package com.goestudi.service;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -14,9 +16,11 @@ import com.goestudi.repository.JobRepository;
 import com.goestudi.specification.JobSpecification;
 import com.goestudi.exception.JobNotFoundException;
 import com.goestudi.model.Job.JobStatus;
+import com.goestudi.model.Location;
 
 import jakarta.validation.Valid;
 import java.util.Optional;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
@@ -36,36 +40,47 @@ public class JobService {
      * Busca trabajos basados en filtros y los devuelve en un formato DTO paginado.
      */
     public Page<JobDTO> findJobsByFilters(
-        String keyword,
-        String location,
-        Boolean isInternship,
-        Boolean isPartTime,
-        Pageable pageable) throws Exception {
+            String keyword,
+            String location,
+            Boolean isInternship,
+            Boolean isPartTime,
+            Pageable pageable) throws Exception {
 
-        log.debug("SERVICE - Parámetros: keyword='{}', location='{}', isInternship={}, isPartTime={}",
-                keyword, location, isInternship, isPartTime);
+            log.debug("SERVICE - Parámetros: keyword='{}', location='{}', isInternship={}, isPartTime={}",
+                    keyword, location, isInternship, isPartTime);
 
-        try {
-            Thread.sleep(1500); // Simulamos un retraso para la demostración
+            try {
+                Thread.sleep(1500); // Simulamos un retraso para la demostración
 
-            Page<Job> jobPage = jobRepository.findAll(
-                JobSpecification.findByFilters(keyword, location, isInternship, isPartTime),
-                pageable
-            );
+                // Convertir el String de la ubicación a un enum Location
+                Location enumLocation = null;
+                if (location != null && !location.isEmpty()) {
+                    try {
+                        enumLocation = Location.valueOf(location.toUpperCase());
+                    } catch (IllegalArgumentException e) {
+                        // Manejar el caso de un valor de ubicación inválido
+                        log.warn("Valor de ubicación inválido en el filtro: {}", location);
+                        // Opcional: podrías lanzar una excepción o simplemente no filtrar por ubicación
+                    }
+                }
 
-            log.info("SERVICE - Trabajos encontrados en DB: {}", jobPage.getTotalElements());
+                Page<Job> jobPage = jobRepository.findAll(
+                    JobSpecification.findByFilters(keyword, enumLocation, isInternship, isPartTime),
+                    pageable
+                );
 
-            Page<JobDTO> dtoPage = jobPage.map(this::convertToDto);
-            log.info("SERVICE - DTOs convertidos: {}", dtoPage.getContent().size());
+                log.info("SERVICE - Trabajos encontrados en DB: {}", jobPage.getTotalElements());
 
-            return dtoPage;
+                Page<JobDTO> dtoPage = jobPage.map(this::convertToDto);
+                log.info("SERVICE - DTOs convertidos: {}", dtoPage.getContent().size());
 
-        } catch (Exception e) {
-            log.error("ERROR en SERVICE: {}", e.getMessage(), e);
-            throw e;
+                return dtoPage;
+
+            } catch (Exception e) {
+                log.error("ERROR en SERVICE: {}", e.getMessage(), e);
+                throw e;
+            }
         }
-    }
-
     /**
      * Crea un nuevo trabajo basado en el DTO y el perfil de empresa proporcionado.
      */
@@ -157,6 +172,17 @@ public class JobService {
         log.warn("SERVICE - Trabajo no encontrado para eliminar con ID: {}", id);
         return false;
     }
+    
+    
+   /* public List<String> findSuggestions(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return List.of();
+        }
+
+        String cleanKeyword = keyword.trim().toLowerCase();
+        return jobRepository.findTitleFirstWordsByKeyword(cleanKeyword);
+    }*/
+    
     
     /**
      * Convierte una entidad Job a un DTO.

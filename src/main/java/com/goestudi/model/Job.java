@@ -18,7 +18,10 @@ public class Job {
     private Long id;
 
     private String title;
-    private String location;
+    
+    @Enumerated(EnumType.STRING)  // 👈 guardamos el enum como texto
+    @Column(nullable = false)
+    private Location location;
     
     // CAMBIO IMPORTANTE: Reemplazar 'company' String por relación con CompanyProfile
     @ManyToOne(fetch = FetchType.LAZY)
@@ -69,7 +72,7 @@ public class Job {
     // Constructores
     public Job() {}
 
-    public Job(String title, String location, CompanyProfile companyProfile, 
+    public Job(String title, Location location, CompanyProfile companyProfile, 
                Boolean isPaid, Boolean isInternship, Boolean isPartTime, 
                String description, String requirements) {
         this.title = title;
@@ -105,8 +108,8 @@ public class Job {
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    public Location getLocation() { return location; }
+    public void setLocation(Location location) { this.location = location; }
 
     public CompanyProfile getCompanyProfile() { return companyProfile; }
     public void setCompanyProfile(CompanyProfile companyProfile) { this.companyProfile = companyProfile; }
